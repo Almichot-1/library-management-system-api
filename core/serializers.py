@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from .models import User, Book, Transaction
+from django.contrib.auth.models import User
+from .models import Book, Transaction
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'date_membership', 'active_status']
+        fields = ['id', 'username', 'email']
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:

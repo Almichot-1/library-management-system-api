@@ -1,37 +1,27 @@
+from django.utils import timezone
+from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
-from .models import User, Book, Transaction
+from .models import User, Book, Transaction  # Import core.User instead of django.contrib.auth.models.User
 from .serializers import UserSerializer, BookSerializer, TransactionSerializer
-from django.db import transaction
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.all()  # Use core.User
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_staff:
-            return self.queryset
         return self.queryset.filter(id=self.request.user.id)
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    search_fields = ['title', 'author', 'isbn']
-    filterset_fields = ['copies_available']
 
-    @action(detail=False, methods=['get'])
-    def available(self, request):
-        queryset = self.get_queryset().filter(copies_available__gt=0)
-        queryset = self.filter_queryset(queryset)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return self.queryset.filter(copies_available__gt=0)
 
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
